@@ -12,8 +12,8 @@ class Scoreboard():
         self.text_color = (30, 30, 30)
         self.font = pygame.font.SysFont(None, 48)
 
-        self.set_score = self.prep_int_board("score", (self.screen.get_rect().width - 80, 20))
-        self.set_level = self.prep_int_board("level", (self.screen.get_rect().width / 2 - 80, 20))
+        self.set_score = self.prep_int_board("score", (self.screen.get_rect().width / 2 - 80, 20))
+        self.set_level = self.prep_int_board("level", (self.screen.get_rect().width - 80, 20))
         self.set_score()  # 设置分数显示面板内容
         self.set_level()
 
