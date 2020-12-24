@@ -26,7 +26,7 @@ def keydown_events(event, ai_settings, screen, ship, bullets):
         sys.exit()
 
 
-def check_events(ai_settings, screen, stats, ship, bullets, play_button):
+def check_events(ai_settings, screen, stats, scoreboard, ship, bullets, play_button):
     """响应鼠标和屏幕事件"""
     for event in pygame.event.get():  # 监控鼠标和键盘事件
         if event.type == pygame.QUIT:  # 监控到退出事件退出，疑问，使用exit方法是否合适？
@@ -38,7 +38,7 @@ def check_events(ai_settings, screen, stats, ship, bullets, play_button):
             keyup_events(event, ai_settings, screen, ship, bullets)
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            check_play_button(ai_settings, stats, play_button, (mouse_x, mouse_y))
+            check_play_button(ai_settings, stats, scoreboard, play_button, (mouse_x, mouse_y))
 
 
 def update_screen(ai_settings, screen, stats, ship, bullets, aliens, buttons, score_board):
@@ -61,7 +61,7 @@ def update_screen(ai_settings, screen, stats, ship, bullets, aliens, buttons, sc
         buttons.draw_button()
         # print("Play Button")
 
-    score_board.show_score()
+    score_board.show_board(["score", "level"])
     pygame.display.flip()  # 让最近一帧绘制的屏幕可见，即覆盖隐藏之前绘制的屏幕
 
 
@@ -90,21 +90,22 @@ def check_bullet_alien_collisions(ai_settings, screen, stats, ship, aliens, bull
     # 参数：组a，组b，碰撞时删除a，碰撞时删除b --> dict：key-组a， value-组b
     collisions = pygame.sprite.groupcollide(bullets, aliens, True, True)
 
-    # 碰撞处理，自己的实现
-    for i in collisions:
-        for j in range(len(collisions[i])):
-            stats.score += ai_settings.alien_point
-            score_board.set_score()
-    # 例程的实现，更优雅点
-    # if collisions:
-    #     for i in collisions.values():
-    #         stats.score += ai_settings.alien_point * len(i)
-    #         score_board.prep_score()
+    if collisions:
+        # 碰撞处理，自己的实现
+        for i in collisions:
+            for j in range(len(collisions[i])):
+                stats.score += ai_settings.alien_point
+                score_board.set_score()
+        # 例程的实现，更优雅点
+        #     for i in collisions.values():
+        #         stats.score += ai_settings.alien_point * len(i)
+        #         score_board.prep_score()
 
-    if len(aliens) == 0:
-        bullets.empty()
-        ai_settings.update_settings()
-        create_fleet(ai_settings, screen, ship, aliens)
+        if len(aliens) == 0:  # 处理命用完的情况
+            ai_settings.update_settings()
+            bullets.empty()
+            stats.level += 1
+            score_board.set_level()
 
 
 def check_alien_ship_collisions(ai_settings, stats, screen, aliens, ship, bullets):
@@ -124,6 +125,7 @@ def ship_hit(ai_settings, stats, screen, aliens, ship, bullets):
     else:
         stats.game_active = False
         pygame.mouse.set_visible(True)
+        create_fleet(ai_settings, screen, ship, aliens)
         print("GAME OVER")
 
 
@@ -185,6 +187,7 @@ def change_fleet_direction(ai_settings, aliens):
 
 
 def update_aliens(ai_settings, stats, screen, aliens, ship, bullets):
+    if len(aliens) == 0:  create_fleet(ai_settings, screen, ship, aliens)
     check_fleet_edges(ai_settings, stats, screen, aliens, ship, bullets)
     aliens.update()
 
@@ -192,10 +195,12 @@ def update_aliens(ai_settings, stats, screen, aliens, ship, bullets):
 """----------------按钮相关------------------"""
 
 
-def check_play_button(ai_settings, stats, play_button, pos):
+def check_play_button(ai_settings, stats, scoreboard, play_button, pos):
     """开始新游戏"""
     if play_button.rect.collidepoint(pos[0], pos[1]) and not stats.game_active:
         stats.reset_stats()
         stats.game_active = True
         ai_settings.initialize_dynamic_settings()
+        scoreboard.set_score()
+        scoreboard.set_level()
         pygame.mouse.set_visible(False)

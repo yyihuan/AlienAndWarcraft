@@ -25,7 +25,7 @@ def run_game():
     pygame.display.set_caption("Alien Invasion")
 
     while True:
-        gf.check_events(ai_settings, screen, stats, ship, bullets, play_button)  # 监控输入设备事件
+        gf.check_events(ai_settings, screen, stats, score_board, ship, bullets, play_button)  # 监控输入设备事件
 
         if stats.game_active:
             ship.update()
